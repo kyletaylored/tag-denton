@@ -15,50 +15,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tag Denton - Explore Denton Landmarks</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
+            background-color: #f9f9f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
             padding: 20px;
             text-align: center;
         }
 
-        h1 {
-            color: #333;
+        header h1 {
+            margin-bottom: 5px;
+            font-size: 1.8em;
         }
 
-        input[type="text"],
-        button,
+        header p {
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+
         textarea {
             padding: 10px;
-            font-size: 16px;
+            font-size: 1em;
             width: 100%;
             margin-top: 10px;
-            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 100px;
         }
 
         button {
             background-color: #4CAF50;
             color: white;
             border: none;
+            padding: 10px 20px;
             cursor: pointer;
+            margin-top: 15px;
+            font-size: 1em;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+            display: inline-block;
         }
 
         button:hover {
             background-color: #45a049;
         }
 
-        #result,
         #multiResult {
             margin-top: 20px;
-            font-weight: bold;
-            color: #333;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
         table,
@@ -69,56 +114,48 @@
 
         th,
         td {
-            padding: 8px;
+            padding: 10px;
             text-align: left;
         }
 
         th {
             background-color: #f4f4f4;
         }
+
+        footer {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Welcome to Tag Denton</h1>
-    <p>Tag Denton lets you explore landmarks in Denton, Texas! Scan an NFC tag at a landmark, and you'll be redirected
-        to Instagram posts from our Visitor’s Bureau. Or, use the tool below to create your own custom links to Denton
-        landmarks!</p>
+    <div class="container">
+        <header>
+            <h1>Welcome to Tag Denton</h1>
+            <p>Your guide to exploring Denton's iconic landmarks!</p>
+        </header>
 
-    <h2>Create a Custom Link</h2>
-    <p>Paste an Instagram post URL below to generate a Tag Denton link.</p>
-    <input type="text" id="instagramUrl" placeholder="Paste Instagram post URL here">
-    <button onclick="generateLink()">Generate Link</button>
+        <div class="content">
+            <!-- Unified Link Generation Section -->
+            <h2>Create Tag Denton Links</h2>
+            <p>Paste one or more Instagram URLs (one per line) to generate Tag Denton links.</p>
+            <textarea id="urls" placeholder="Paste Instagram URLs here, one per line"></textarea>
+            <button onclick="generateLinks()">Generate Links</button>
+            <div id="multiResult"></div>
+        </div>
 
-    <div id="result"></div>
-
-    <h2>Generate Multiple Links</h2>
-    <p>Paste multiple Instagram URLs (one per line) in the box below to generate a list of Tag Denton links.</p>
-    <textarea id="multiUrls" placeholder="Paste Instagram URLs here, one per line"></textarea>
-    <button onclick="generateMultipleLinks()">Generate Links</button>
-
-    <div id="multiResult"></div>
+        <footer>
+            <p>&copy; 2024 Tag Denton. All rights reserved.</p>
+        </footer>
+    </div>
 
     <script>
-        function generateLink() {
-            const url = document.getElementById("instagramUrl").value.trim();
-            const match = url.match(/instagram\.com\/(p|reel)\/([^\/?]+)/);
-            if (match && match[2]) {
-                const postId = match[2];
-                const customLink = `https://tagdenton.com/redirect.php?id=${postId}`;
-                document.getElementById("result").innerHTML = `
-                    <p>Your custom Tag Denton link:</p>
-                    <a href="${customLink}" target="_blank">${customLink}</a>
-                `;
-            } else {
-                document.getElementById("result").innerHTML = `
-                    <p style="color: red;">Please enter a valid Instagram post or reel URL.</p>
-                `;
-            }
-        }
-
-        function generateMultipleLinks() {
-            const urls = document.getElementById("multiUrls").value.trim().split('\n');
+        function generateLinks() {
+            const urls = document.getElementById("urls").value.trim().split('\n');
             let resultTable = `
                 <table>
                     <tr>
