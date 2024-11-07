@@ -38,8 +38,7 @@ function trackVisit($id) {
         apiSecret: $apiSecret,
         debug: false // Set to true for debugging
     )
-    ->setClientId($clientId)
-    ->setTimestampMicros((int)(microtime(true) * 1000000));
+    ->setClientId($clientId);
 
     // Create an Item object representing the media
     $item = Item::new()
