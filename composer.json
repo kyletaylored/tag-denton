@@ -1,0 +1,15 @@
+{
+    "name": "kyletaylored/tag-denton",
+    "description": "Create short URLs for Instagram posts associated with landmarks in Denton, Texas.",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Kyle Taylor",
+            "email": "kyletaylored@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "theiconic/php-ga-measurement-protocol": "^2.9"
+    }
+}
