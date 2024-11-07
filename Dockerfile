@@ -17,7 +17,7 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -out /etc/ssl/certs/selfsigned.crt \
     -subj "/C=US/ST=Texas/L=Denton/O=TagDenton/OU=Dev/CN=localhost"
 
-# Configure Apache for HTTPS
+# Configure Apache for HTTPS and custom 404 page
 RUN echo "\n<IfModule mod_ssl.c>\n\
     <VirtualHost _default_:443>\n\
         DocumentRoot /var/www/html\n\
@@ -25,11 +25,19 @@ RUN echo "\n<IfModule mod_ssl.c>\n\
         SSLEngine on\n\
         SSLCertificateFile /etc/ssl/certs/selfsigned.crt\n\
         SSLCertificateKeyFile /etc/ssl/private/selfsigned.key\n\
+        ErrorDocument 404 /404.html\n\
     </VirtualHost>\n\
 </IfModule>" > /etc/apache2/sites-available/default-ssl.conf
 
-# Enable the default SSL site
-RUN a2ensite default-ssl
+# Also configure 404 for the HTTP virtual host
+RUN echo "\n<VirtualHost *:80>\n\
+        DocumentRoot /var/www/html\n\
+        ServerName localhost\n\
+        ErrorDocument 404 /404.html\n\
+    </VirtualHost>\n" > /etc/apache2/sites-available/000-default.conf
+
+# Enable the default SSL site and rewrite module
+RUN a2ensite default-ssl && a2enmod rewrite
 
 # Expose both HTTP and HTTPS ports
 EXPOSE 80 443

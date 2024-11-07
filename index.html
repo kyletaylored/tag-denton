@@ -54,29 +54,29 @@
 
     <script>
         function generateLink() {
-            // Get the Instagram URL entered by the user
-            const url = document.getElementById("instagramUrl").value.trim();
+        // Get the Instagram URL entered by the user
+        const url = document.getElementById("instagramUrl").value.trim();
+        
+        // Adjust regex to match both post and reel URLs
+        const match = url.match(/instagram\.com\/(p|reel)\/([^\/?]+)/);
+        if (match && match[2]) {
+            const postId = match[2];
             
-            // Extract the post ID from the URL using regex
-            const match = url.match(/instagram\.com\/p\/([^\/?]+)/);
-            if (match && match[1]) {
-                const postId = match[1];
-                
-                // Generate the custom Tag Denton URL
-                const customLink = `https://tagdenton.com/redirect.php?id=${postId}`;
-                
-                // Display the generated link
-                document.getElementById("result").innerHTML = `
-                    <p>Your custom Tag Denton link:</p>
-                    <a href="${customLink}" target="_blank">${customLink}</a>
-                `;
-            } else {
-                // Show an error if the URL is invalid
-                document.getElementById("result").innerHTML = `
-                    <p style="color: red;">Please enter a valid Instagram post URL.</p>
-                `;
-            }
+            // Generate the custom Tag Denton URL
+            const customLink = `https://tagdenton.com/redirect.php?id=${postId}`;
+            
+            // Display the generated link
+            document.getElementById("result").innerHTML = `
+                <p>Your custom Tag Denton link:</p>
+                <a href="${customLink}" target="_blank">${customLink}</a>
+            `;
+        } else {
+            // Show an error if the URL is invalid
+            document.getElementById("result").innerHTML = `
+                <p style="color: red;">Please enter a valid Instagram post or reel URL.</p>
+            `;
         }
+    }
     </script>
 </body>
 </html>

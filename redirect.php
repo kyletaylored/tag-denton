@@ -6,17 +6,23 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-// Get the Instagram post ID from the query parameter
+// Get the Instagram post or reel ID from the query parameter and sanitize it
 $postId = htmlspecialchars($_GET['id']);
 
-// Define the Instagram app and web URLs using the post ID
+// Define the Instagram app and web URLs
 $instagramAppUrl = "instagram://media?id=" . $postId;
-$instagramWebUrl = "https://www.instagram.com/p/" . $postId . "/";
 
-// Attempt to redirect to the Instagram app URL
+// Check if the ID is a post or a reel by inspecting the first character of the ID
+// This is a simple way to differentiate, assuming IDs follow predictable patterns
+$instagramWebUrl = "https://www.instagram.com/p/" . $postId . "/";
+if (strpos($postId, "reel") === 0) {
+    $instagramWebUrl = "https://www.instagram.com/reel/" . $postId . "/";
+}
+
+// Redirect to the Instagram app URL first
 header("Location: $instagramAppUrl");
 
-// Set a fallback refresh to the Instagram web URL in case the app isn't installed
+// Set a fallback to the web version if the app isn't available
 header("Refresh: 1; url=$instagramWebUrl");
 
 exit;
