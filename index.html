@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Denton - Explore Denton Landmarks</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        input[type="text"], button {
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Tag Denton</h1>
+    <p>Tag Denton lets you explore landmarks in Denton, Texas! Scan an NFC tag at a landmark, and you'll be redirected to Instagram posts from our Visitor’s Bureau. Or, use the tool below to create your own custom links to Denton landmarks!</p>
+    
+    <h2>Create a Custom Link</h2>
+    <p>Paste an Instagram post URL below to generate a Tag Denton link.</p>
+
+    <!-- Input for Instagram URL -->
+    <input type="text" id="instagramUrl" placeholder="Paste Instagram post URL here">
+    <button onclick="generateLink()">Generate Link</button>
+
+    <!-- Result display -->
+    <div id="result"></div>
+
+    <script>
+        function generateLink() {
+            // Get the Instagram URL entered by the user
+            const url = document.getElementById("instagramUrl").value.trim();
+            
+            // Extract the post ID from the URL using regex
+            const match = url.match(/instagram\.com\/p\/([^\/?]+)/);
+            if (match && match[1]) {
+                const postId = match[1];
+                
+                // Generate the custom Tag Denton URL
+                const customLink = `https://tagdenton.com/redirect.php?id=${postId}`;
+                
+                // Display the generated link
+                document.getElementById("result").innerHTML = `
+                    <p>Your custom Tag Denton link:</p>
+                    <a href="${customLink}" target="_blank">${customLink}</a>
+                `;
+            } else {
+                // Show an error if the URL is invalid
+                document.getElementById("result").innerHTML = `
+                    <p style="color: red;">Please enter a valid Instagram post URL.</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
