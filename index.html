@@ -14,180 +14,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tag Denton - Explore Denton Landmarks</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        header {
-            background-color: #4CAF50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        header h1 {
-            margin-bottom: 5px;
-            font-size: 1.8em;
-        }
-
-        header p {
-            font-size: 1.1em;
-        }
-
-        .content {
-            padding: 30px;
-            text-align: center;
-        }
-
-        h2 {
-            font-size: 1.4em;
-            margin-bottom: 10px;
-            color: #4CAF50;
-        }
-
-        textarea {
-            padding: 10px;
-            font-size: 1em;
-            width: 100%;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            margin-top: 15px;
-            font-size: 1em;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-            display: inline-block;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        #multiResult {
-            margin-top: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table,
-        th,
-        td {
-            border: 1px solid #ddd;
-        }
-
-        th,
-        td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f4f4f4;
-        }
-
-        footer {
-            background-color: #4CAF50;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            font-size: 0.9em;
-        }
-    </style>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body>
-    <div class="container">
-        <header>
-            <h1>Welcome to Tag Denton</h1>
-            <p>Your guide to exploring Denton's iconic landmarks!</p>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="#">Tag Denton</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Home</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li> -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container shadow p-4 mt-5 bg-white rounded">
+        <header class="text-center mb-4">
+            <h1 class="text-success">Generate Tag Denton Links</h1>
+            <p>Create quick-access links to explore Denton landmarks.</p>
         </header>
 
-        <div class="content">
-            <!-- Unified Link Generation Section -->
-            <h2>Create Tag Denton Links</h2>
+        <div class="content text-center">
             <p>Paste one or more Instagram URLs (one per line) to generate Tag Denton links.</p>
-            <textarea id="urls" placeholder="Paste Instagram URLs here, one per line"></textarea>
-            <button onclick="generateLinks()">Generate Links</button>
-            <div id="multiResult"></div>
-        </div>
 
-        <footer>
-            <p>&copy; 2024 Tag Denton. All rights reserved.</p>
-        </footer>
+            <div class="mb-3">
+                <textarea id="urls" class="form-control" placeholder="Paste Instagram URLs here, one per line"
+                    rows="5"></textarea>
+            </div>
+
+            <button onclick="generateLinks()" class="btn btn-success mb-3">Generate Links</button>
+
+            <div id="multiResult" class="table-responsive"></div>
+        </div>
     </div>
+
+    <footer class="text-center mt-5 text-muted">
+        <p>&copy; 2024 Tag Denton. All rights reserved.</p>
+    </footer>
 
     <script>
         function generateLinks() {
             const urls = document.getElementById("urls").value.trim().split('\n');
+
+            // Create table structure with Bootstrap classes
             let resultTable = `
-                <table>
-                    <tr>
-                        <th>Instagram URL</th>
-                        <th>Tag Denton Link</th>
-                    </tr>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tag Denton Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
             `;
 
+            // Process each URL and create rows for the table
             urls.forEach((url) => {
                 const match = url.trim().match(/instagram\.com\/(p|reel)\/([^\/?]+)/);
                 if (match && match[2]) {
                     const postId = match[2];
-                    const customLink = `https://tagdenton.com/redirect.php?id=${postId}`;
+                    const customLink = window.location.origin + `/redirect.php?id=${postId}`;
                     resultTable += `
                         <tr>
-                            <td><a href="${url}" target="_blank">${url}</a></td>
                             <td><a href="${customLink}" target="_blank">${customLink}</a></td>
                         </tr>
                     `;
                 } else {
                     resultTable += `
                         <tr>
-                            <td colspan="2" style="color: red;">Invalid URL: ${url}</td>
+                            <td class="text-danger">Invalid URL: ${url}</td>
                         </tr>
                     `;
                 }
             });
 
-            resultTable += '</table>';
+            resultTable += '</tbody></table>';
             document.getElementById("multiResult").innerHTML = resultTable;
         }
     </script>
+
+    <!-- Bootstrap JS (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
