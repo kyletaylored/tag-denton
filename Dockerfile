@@ -1,8 +1,17 @@
 # Use the official PHP image with Apache
 FROM php:8.2-apache
 
-# Copy the project files to the container's web root
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set the working directory
+WORKDIR /var/www/html
+
+# Copy the project files
 COPY . /var/www/html/
+
+# Install PHP dependencies with Composer
+RUN composer install
 
 # Set the correct permissions for the web server
 RUN chown -R www-data:www-data /var/www/html \

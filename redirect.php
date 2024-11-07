@@ -1,7 +1,24 @@
 <?php
+
+require 'vendor/autoload.php';
+
+use TheIconic\Tracking\GoogleAnalytics\Analytics;
+
+// Function to track visits with Google Analytics
+function trackVisit($id) {
+    $analytics = new Analytics(true); // Enable SSL
+    $analytics
+        ->setProtocolVersion('1')
+        ->setTrackingId($_ENV['GA_ID']) // Replace with your Google Analytics tracking ID
+        ->setClientId($_SERVER['REMOTE_ADDR']) // Using IP as unique client identifier for simplicity
+        ->setEventCategory('Visit')
+        ->setEventAction('Landmark Scanned')
+        ->setEventLabel($id)
+        ->sendEvent();
+}
+
 // Check if 'id' parameter is present in the URL
 if (!isset($_GET['id'])) {
-    // If 'id' parameter is missing, redirect to a 404 or error page
     header("Location: /404.html");
     exit;
 }
@@ -9,11 +26,13 @@ if (!isset($_GET['id'])) {
 // Get the Instagram post or reel ID from the query parameter and sanitize it
 $postId = htmlspecialchars($_GET['id']);
 
+// Track the visit in Google Analytics
+trackVisit($postId);
+
 // Define the Instagram app and web URLs
 $instagramAppUrl = "instagram://media?id=" . $postId;
 
-// Check if the ID is a post or a reel by inspecting the first character of the ID
-// This is a simple way to differentiate, assuming IDs follow predictable patterns
+// Determine whether it's a post or a reel URL
 $instagramWebUrl = "https://www.instagram.com/p/" . $postId . "/";
 if (strpos($postId, "reel") === 0) {
     $instagramWebUrl = "https://www.instagram.com/reel/" . $postId . "/";
