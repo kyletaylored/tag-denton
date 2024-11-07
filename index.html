@@ -28,7 +28,8 @@
         }
 
         input[type="text"],
-        button {
+        button,
+        textarea {
             padding: 10px;
             font-size: 16px;
             width: 100%;
@@ -47,10 +48,33 @@
             background-color: #45a049;
         }
 
-        #result {
+        #result,
+        #multiResult {
             margin-top: 20px;
             font-weight: bold;
             color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
         }
     </style>
 </head>
@@ -63,38 +87,68 @@
 
     <h2>Create a Custom Link</h2>
     <p>Paste an Instagram post URL below to generate a Tag Denton link.</p>
-
-    <!-- Input for Instagram URL -->
     <input type="text" id="instagramUrl" placeholder="Paste Instagram post URL here">
     <button onclick="generateLink()">Generate Link</button>
 
-    <!-- Result display -->
     <div id="result"></div>
+
+    <h2>Generate Multiple Links</h2>
+    <p>Paste multiple Instagram URLs (one per line) in the box below to generate a list of Tag Denton links.</p>
+    <textarea id="multiUrls" placeholder="Paste Instagram URLs here, one per line"></textarea>
+    <button onclick="generateMultipleLinks()">Generate Links</button>
+
+    <div id="multiResult"></div>
 
     <script>
         function generateLink() {
-            // Get the Instagram URL entered by the user
             const url = document.getElementById("instagramUrl").value.trim();
-
-            // Adjust regex to match both post and reel URLs
             const match = url.match(/instagram\.com\/(p|reel)\/([^\/?]+)/);
             if (match && match[2]) {
                 const postId = match[2];
-
-                // Generate the custom Tag Denton URL
                 const customLink = `https://tagdenton.com/redirect.php?id=${postId}`;
-
-                // Display the generated link
                 document.getElementById("result").innerHTML = `
-                <p>Your custom Tag Denton link:</p>
-                <a href="${customLink}" target="_blank">${customLink}</a>
-            `;
+                    <p>Your custom Tag Denton link:</p>
+                    <a href="${customLink}" target="_blank">${customLink}</a>
+                `;
             } else {
-                // Show an error if the URL is invalid
                 document.getElementById("result").innerHTML = `
-                <p style="color: red;">Please enter a valid Instagram post or reel URL.</p>
-            `;
+                    <p style="color: red;">Please enter a valid Instagram post or reel URL.</p>
+                `;
             }
+        }
+
+        function generateMultipleLinks() {
+            const urls = document.getElementById("multiUrls").value.trim().split('\n');
+            let resultTable = `
+                <table>
+                    <tr>
+                        <th>Instagram URL</th>
+                        <th>Tag Denton Link</th>
+                    </tr>
+            `;
+
+            urls.forEach((url) => {
+                const match = url.trim().match(/instagram\.com\/(p|reel)\/([^\/?]+)/);
+                if (match && match[2]) {
+                    const postId = match[2];
+                    const customLink = `https://tagdenton.com/redirect.php?id=${postId}`;
+                    resultTable += `
+                        <tr>
+                            <td><a href="${url}" target="_blank">${url}</a></td>
+                            <td><a href="${customLink}" target="_blank">${customLink}</a></td>
+                        </tr>
+                    `;
+                } else {
+                    resultTable += `
+                        <tr>
+                            <td colspan="2" style="color: red;">Invalid URL: ${url}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            resultTable += '</table>';
+            document.getElementById("multiResult").innerHTML = resultTable;
         }
     </script>
 </body>
