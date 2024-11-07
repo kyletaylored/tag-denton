@@ -2,6 +2,7 @@
 FROM php:8.2-apache
 
 # Install Composer
+ARG COMPOSER_ALLOW_SUPERUSER=1
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set the working directory
@@ -29,20 +30,20 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 # Configure Apache for HTTPS and custom 404 page
 RUN echo "\n<IfModule mod_ssl.c>\n\
     <VirtualHost _default_:443>\n\
-        DocumentRoot /var/www/html\n\
-        ServerName localhost\n\
-        SSLEngine on\n\
-        SSLCertificateFile /etc/ssl/certs/selfsigned.crt\n\
-        SSLCertificateKeyFile /etc/ssl/private/selfsigned.key\n\
-        ErrorDocument 404 /404.html\n\
+    DocumentRoot /var/www/html\n\
+    ServerName localhost\n\
+    SSLEngine on\n\
+    SSLCertificateFile /etc/ssl/certs/selfsigned.crt\n\
+    SSLCertificateKeyFile /etc/ssl/private/selfsigned.key\n\
+    ErrorDocument 404 /404.html\n\
     </VirtualHost>\n\
-</IfModule>" > /etc/apache2/sites-available/default-ssl.conf
+    </IfModule>" > /etc/apache2/sites-available/default-ssl.conf
 
 # Also configure 404 for the HTTP virtual host
 RUN echo "\n<VirtualHost *:80>\n\
-        DocumentRoot /var/www/html\n\
-        ServerName localhost\n\
-        ErrorDocument 404 /404.html\n\
+    DocumentRoot /var/www/html\n\
+    ServerName localhost\n\
+    ErrorDocument 404 /404.html\n\
     </VirtualHost>\n" > /etc/apache2/sites-available/000-default.conf
 
 # Enable the default SSL site and rewrite module
