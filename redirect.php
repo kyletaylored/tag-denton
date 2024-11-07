@@ -6,6 +6,20 @@ use AlexWestergaard\PhpGa4\Analytics;
 use AlexWestergaard\PhpGa4\Item;
 use AlexWestergaard\PhpGa4\Event\SelectItem;
 
+/**
+ * Generate a client id.
+ *
+ * @return string
+ */
+function generateClientId() {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown_ip';
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown_agent';
+    $timestamp = microtime(true);
+
+    // Combine the IP, User-Agent, and a high-precision timestamp to create a unique hash
+    return hash('sha256', $ip . $userAgent . $timestamp);
+}
+
 // Function to track visits with Google Analytics 4
 function trackVisit($id) {
     // Pull the Measurement ID and API Secret from environment variables
@@ -13,16 +27,19 @@ function trackVisit($id) {
     $apiSecret = getenv('GA_API_SECRET');
 
     // If either the Measurement ID or API Secret is not set, skip tracking
-    if (!$measurementId || !$apiSecret) {
-        return; // Skip tracking
-    }
+    if (!$measurementId || !$apiSecret) return;
+
+    // Generate a unique client ID based on IP, user-agent, and timestamp
+    $clientId = generateClientId();
 
     // Initialize the Analytics object
     $analytics = Analytics::new(
         measurementId: $measurementId,
         apiSecret: $apiSecret,
         debug: false // Set to true for debugging
-    );
+    )
+    ->setClientId($clientId)
+    ->setTimestampMicros((int)(microtime(true) * 1000000));
 
     // Create an Item object representing the media
     $item = Item::new()
