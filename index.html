@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3BJQSH1QEL"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-3BJQSH1QEL');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tag Denton - Explore Denton Landmarks</title>
@@ -12,25 +22,31 @@
             padding: 20px;
             text-align: center;
         }
+
         h1 {
             color: #333;
         }
-        input[type="text"], button {
+
+        input[type="text"],
+        button {
             padding: 10px;
             font-size: 16px;
             width: 100%;
             margin-top: 10px;
             box-sizing: border-box;
         }
+
         button {
             background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
         }
+
         button:hover {
             background-color: #45a049;
         }
+
         #result {
             margin-top: 20px;
             font-weight: bold;
@@ -38,10 +54,13 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Welcome to Tag Denton</h1>
-    <p>Tag Denton lets you explore landmarks in Denton, Texas! Scan an NFC tag at a landmark, and you'll be redirected to Instagram posts from our Visitor’s Bureau. Or, use the tool below to create your own custom links to Denton landmarks!</p>
-    
+    <p>Tag Denton lets you explore landmarks in Denton, Texas! Scan an NFC tag at a landmark, and you'll be redirected
+        to Instagram posts from our Visitor’s Bureau. Or, use the tool below to create your own custom links to Denton
+        landmarks!</p>
+
     <h2>Create a Custom Link</h2>
     <p>Paste an Instagram post URL below to generate a Tag Denton link.</p>
 
@@ -54,29 +73,30 @@
 
     <script>
         function generateLink() {
-        // Get the Instagram URL entered by the user
-        const url = document.getElementById("instagramUrl").value.trim();
-        
-        // Adjust regex to match both post and reel URLs
-        const match = url.match(/instagram\.com\/(p|reel)\/([^\/?]+)/);
-        if (match && match[2]) {
-            const postId = match[2];
-            
-            // Generate the custom Tag Denton URL
-            const customLink = `https://tagdenton.com/redirect.php?id=${postId}`;
-            
-            // Display the generated link
-            document.getElementById("result").innerHTML = `
+            // Get the Instagram URL entered by the user
+            const url = document.getElementById("instagramUrl").value.trim();
+
+            // Adjust regex to match both post and reel URLs
+            const match = url.match(/instagram\.com\/(p|reel)\/([^\/?]+)/);
+            if (match && match[2]) {
+                const postId = match[2];
+
+                // Generate the custom Tag Denton URL
+                const customLink = `https://tagdenton.com/redirect.php?id=${postId}`;
+
+                // Display the generated link
+                document.getElementById("result").innerHTML = `
                 <p>Your custom Tag Denton link:</p>
                 <a href="${customLink}" target="_blank">${customLink}</a>
             `;
-        } else {
-            // Show an error if the URL is invalid
-            document.getElementById("result").innerHTML = `
+            } else {
+                // Show an error if the URL is invalid
+                document.getElementById("result").innerHTML = `
                 <p style="color: red;">Please enter a valid Instagram post or reel URL.</p>
             `;
+            }
         }
-    }
     </script>
 </body>
+
 </html>

@@ -2,19 +2,42 @@
 
 require 'vendor/autoload.php';
 
-use TheIconic\Tracking\GoogleAnalytics\Analytics;
+use AlexWestergaard\PhpGa4\Analytics;
+use AlexWestergaard\PhpGa4\Item;
+use AlexWestergaard\PhpGa4\Event\SelectItem;
 
-// Function to track visits with Google Analytics
+// Function to track visits with Google Analytics 4
 function trackVisit($id) {
-    $analytics = new Analytics(true); // Enable SSL
-    $analytics
-        ->setProtocolVersion('1')
-        ->setTrackingId($_ENV['GA_ID']) // Replace with your Google Analytics tracking ID
-        ->setClientId($_SERVER['REMOTE_ADDR']) // Using IP as unique client identifier for simplicity
-        ->setEventCategory('Visit')
-        ->setEventAction('Landmark Scanned')
-        ->setEventLabel($id)
-        ->sendEvent();
+    // Pull the Measurement ID and API Secret from environment variables
+    $measurementId = getenv('GA_MEASUREMENT_ID');
+    $apiSecret = getenv('GA_API_SECRET');
+
+    // If either the Measurement ID or API Secret is not set, skip tracking
+    if (!$measurementId || !$apiSecret) {
+        return; // Skip tracking
+    }
+
+    // Initialize the Analytics object
+    $analytics = Analytics::new(
+        measurementId: $measurementId,
+        apiSecret: $apiSecret,
+        debug: false // Set to true for debugging
+    );
+
+    // Create an Item object representing the media
+    $item = Item::new()
+        ->setItemId($id)
+        ->setItemName('Media ' . $id);
+
+    // Create a SelectItem event
+    $event = SelectItem::new()
+        ->setItem($item); // Add the Item object as an event parameter
+
+    // Add the event to analytics
+    $analytics->addEvent($event);
+
+    // Send the event to GA4
+    $analytics->post();
 }
 
 // Check if 'id' parameter is present in the URL

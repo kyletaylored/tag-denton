@@ -10,6 +10,6 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "theiconic/php-ga-measurement-protocol": "^2.9"
+        "alexwestergaard/php-ga4": "^1.2"
     }
 }
