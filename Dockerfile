@@ -8,6 +8,12 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set the working directory
 WORKDIR /var/www/html
 
+# Install system dependencies for Composer and PHP extensions
+RUN apt-get update && \
+    apt-get install -y git unzip zip && \
+    docker-php-ext-install pdo pdo_mysql && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy the project files
 COPY . /var/www/html/
 
