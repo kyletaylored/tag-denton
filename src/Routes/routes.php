@@ -23,7 +23,11 @@ Flight::route('GET /redirect/@key', function ($key) {
 });
 
 Flight::route('GET /', function() {
-    Flight::render('home');
+    if (!App\Controllers\AuthController::isAuthenticated()) {
+        Flight::redirect('/login');
+    } else {
+        Flight::render('home');
+    }
 });
 
 Flight::route('GET /login', function () {
