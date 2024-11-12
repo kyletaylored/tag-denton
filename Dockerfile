@@ -10,7 +10,9 @@ WORKDIR /var/www/html
 
 # Install system dependencies for Composer and PHP extensions
 RUN apt-get update && \
-    apt-get install -y git unzip zip && \
+    apt-get install -y git unzip zip libcurl4-openssl-dev pkg-config libssl-dev && \
+    pecl install mongodb && \
+    docker-php-ext-enable mongodb && \
     docker-php-ext-install pdo pdo_mysql && \
     rm -rf /var/lib/apt/lists/*
 
