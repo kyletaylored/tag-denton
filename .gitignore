@@ -1,2 +1,45 @@
+# Dependency directories
 /vendor/
-.vscode
+node_modules/
+
+# Composer files
+composer.lock
+
+# Environment files
+.env
+.env.*           # For other environment variants, e.g., .env.test
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp            # Swap files for Vim
+*.swo            # Swap files for Vim
+*.bak            # Backup files
+*.tmp            # Temporary files
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Log files
+*.log
+logs/
+error_log
+debug.log
+
+# Cache/temporary files
+/tmp/
+.cache/
+storage/framework/cache/
+storage/framework/views/
+
+# PHPUnit and other test artifacts
+.phpunit.result.cache
+coverage/
+reports/
+
+# Build/compiled files
+/public/storage
+/public/build/
+*.phar
