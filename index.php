@@ -3,13 +3,13 @@
 require 'vendor/autoload.php';
 
 // Allowed hostnames for production
-$allowedHosts = ['tagdenton.com', 'www.tagdenton.com', 'localhost'];
+$allowedHosts = ['tagdenton.com', 'www.tagdenton.com'];
 
 // Get the `Host` header from the request
 $requestHost = $_SERVER['HTTP_HOST'] ?? '';
 
 // Check if the current environment is local or production
-$isLocal = in_array($requestHost, ['localhost', '127.0.0.1']);
+$isLocal = preg_match('/^(localhost|127\.0\.0\.1)(:\d+)?$/', $requestHost);
 
 // Redirect only in production
 if (!$isLocal && !in_array($requestHost, $allowedHosts)) {
