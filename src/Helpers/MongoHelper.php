@@ -9,9 +9,9 @@ class MongoHelper
 {
     public static function getMongoConnection()
     {
-        // Load environment variables
-        $mongoUri = getenv('MONGO_URI');
-        $mongoDatabase = getenv('MONGO_DATABASE');
+        // Use environment variables for MongoDB connection
+        $mongoUri = $_ENV['MONGO_URI'] ?? null;
+        $mongoDatabase = $_ENV['MONGO_DATABASE'] ?? null;
 
         if (!$mongoUri || !$mongoDatabase) {
             throw new \Exception('MongoDB connection details are missing from environment variables.');
@@ -30,7 +30,14 @@ class MongoHelper
             throw new \Exception('Failed to connect to MongoDB: ' . $e->getMessage());
         }
 
-        // Return the selected database
+        // Return the database connection
         return $client->selectDatabase($mongoDatabase);
+    }
+
+    public static function getLinksCollection()
+    {
+        $db = self::getMongoConnection();
+        $collectionName = $_ENV['MONGO_COLLECTION'] ?? 'links'; // Default to 'links' if not set
+        return $db->selectCollection($collectionName);
     }
 }

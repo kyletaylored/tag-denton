@@ -9,20 +9,13 @@ class ProxyController
     public static function handleProxyRequest($request)
     {
         $db = MongoHelper::getMongoConnection();
+        $collection = $db->selectCollection('links');
+
         $url = $request['url'];
 
-        // Sanitize and normalize the URL
-        $sanitizedUrl = self::sanitizeUrl($url);
-
-        if (!$sanitizedUrl) {
-            return ['error' => 'Invalid URL'];
-        }
-
-        $collection = $db->links;
-        $existingEntry = $collection->findOne(['url' => $sanitizedUrl]);
-
+        // Check if the URL already exists
+        $existingEntry = $collection->findOne(['url' => $url]);
         if ($existingEntry) {
-            // Return the existing key if already cached
             return ['key' => $existingEntry['key']];
         }
 
@@ -35,7 +28,7 @@ class ProxyController
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json'
         ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['url' => $sanitizedUrl]));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['url' => $url]));
         $response = curl_exec($ch);
         curl_close($ch);
 
@@ -47,27 +40,12 @@ class ProxyController
 
         // Store in MongoDB
         $collection->insertOne([
-            'url' => $sanitizedUrl,
+            'url' => $url,
             'key' => $key,
             'data' => $data,
             'has_deep_link' => $hasDeepLink
         ]);
 
-        // Return the unique key
         return ['key' => $key];
-    }
-
-    private static function sanitizeUrl($url)
-    {
-        // Parse the URL
-        $parsedUrl = parse_url($url);
-
-        if (!isset($parsedUrl['host']) || !isset($parsedUrl['path'])) {
-            return null; // Invalid URL
-        }
-
-        // Reconstruct the sanitized URL
-        $sanitizedPath = rtrim($parsedUrl['path'], '/');
-        return "{$parsedUrl['scheme']}://{$parsedUrl['host']}{$sanitizedPath}";
     }
 }
