@@ -5,11 +5,18 @@ services:
       dockerfile: Dockerfile
     container_name: tag-denton
     ports:
-      - "8081:80"
+      - 8080:80
+      - 8443:443
+      - 9003:9003
     volumes:
       - .:/var/www/html
     environment:
-      ENABLE_XDEBUG: "${ENABLE_XDEBUG:-0}" # Set to "1" to enable Xdebug
-      XDEBUG_CLIENT_HOST: "host.docker.internal" # Adjust for your environment
-      XDEBUG_CLIENT_PORT: "9003"
-      OPCACHE_ENABLE: "${OPCACHE_ENABLE:-1}"
+      - ENABLE_XDEBUG=${ENABLE_XDEBUG:-0}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health-check.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s

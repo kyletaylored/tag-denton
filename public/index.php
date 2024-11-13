@@ -1,6 +1,10 @@
 <?php
 
-require 'vendor/autoload.php';
+// Define the project root directory
+define('PROJECT_ROOT', dirname(__DIR__ . '../'));
+
+// Autoload dependencies
+require_once PROJECT_ROOT . '/vendor/autoload.php';
 
 // Allowed hostnames for production
 $allowedHosts = ['tagdenton.com', 'www.tagdenton.com'];
@@ -20,12 +24,12 @@ if (!$isLocal && !in_array($requestHost, $allowedHosts)) {
 }
 
 // Conditional .env loading for local development
-if ($isLocal && file_exists(__DIR__ . '/.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+if ($isLocal && file_exists(PROJECT_ROOT . '/.env')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(PROJECT_ROOT);
     $dotenv->load();
 }
 
 // Start the application
-require_once __DIR__ . '/src/Routes/routes.php';
-Flight::set('flight.views.path', __DIR__ . '/views');
+require_once PROJECT_ROOT . '/src/Routes/routes.php';
+Flight::set('flight.views.path', PROJECT_ROOT . '/views');
 Flight::start();
