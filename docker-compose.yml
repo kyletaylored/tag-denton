@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tag-denton
+    ports:
+      - "8081:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      ENABLE_XDEBUG: "${ENABLE_XDEBUG:-0}" # Set to "1" to enable Xdebug
+      XDEBUG_CLIENT_HOST: "host.docker.internal" # Adjust for your environment
+      XDEBUG_CLIENT_PORT: "9003"
+      OPCACHE_ENABLE: "${OPCACHE_ENABLE:-1}"
