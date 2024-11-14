@@ -4,14 +4,15 @@ namespace App\Helpers;
 
 use MongoDB\Client;
 use MongoDB\Driver\ServerApi;
+use App\Helpers\EnvConfig;
 
 class MongoHelper
 {
     public static function getMongoConnection()
     {
         // Use environment variables for MongoDB connection
-        $mongoUri = $_ENV['MONGO_URI'] ?? null;
-        $mongoDatabase = $_ENV['MONGO_DATABASE'] ?? null;
+        $mongoUri = EnvConfig::get('MONGO_URI');
+        $mongoDatabase = EnvConfig::get('MONGO_DATABASE');
 
         if (!$mongoUri || !$mongoDatabase) {
             throw new \Exception('MongoDB connection details are missing from environment variables.');
@@ -37,7 +38,7 @@ class MongoHelper
     public static function getLinksCollection()
     {
         $db = self::getMongoConnection();
-        $collectionName = $_ENV['MONGO_COLLECTION'] ?? 'links'; // Default to 'links' if not set
+        $collectionName = 'links'; // Default to 'links' if not set
         return $db->selectCollection($collectionName);
     }
 }

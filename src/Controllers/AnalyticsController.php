@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Helpers\EnvConfig;
+
 class AnalyticsController
 {
     private string $measurementId;
@@ -11,8 +13,8 @@ class AnalyticsController
     public function __construct()
     {
         
-        $this->measurementId = $_ENV['GA_MEASUREMENT_ID'];
-        $this->apiSecret = $_ENV['GA_API_SECRET'];
+        $this->measurementId = EnvConfig::get('GA_MEASUREMENT_ID');
+        $this->apiSecret = EnvConfig::get('GA_API_SECRET');
 
         if (empty($this->measurementId) || empty($this->apiSecret)) {
             throw new \RuntimeException('GA4 credentials not configured');
