@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use GeoIp2\Database\Reader;
-use WhichBrowser\Parser;
+use DeviceDetector\DeviceDetector;
 use App\Helpers\MongoHelper;
 
 class RedirectController
@@ -11,27 +11,38 @@ class RedirectController
     const MAXMIND_DB_PATH = __DIR__ . '/../../geolite2-city/GeoLite2-City.mmdb';
 
     private static function parseUserAgent($userAgent) {
-        $parser = new Parser($userAgent);
-        
-        $data = [
-            'browser' => $parser->browser->name ?? 'Unknown',
-            'browser_version' => $parser->browser->version->value ?? 'Unknown',
-            'os' => $parser->os->name ?? 'Unknown',
-            'os_version' => $parser->os->version->value ?? 'Unknown',
-            'device_type' => $parser->getType(),
-            'device_brand' => $parser->device->brand ?? 'Unknown',
-            'device_model' => $parser->device->model ?? 'Unknown'
-        ];
 
-        return $data;
+        $dd = new DeviceDetector($userAgent);
+        $dd->parse();
+
+        // Return bot info if detected
+        if ($dd->isBot()) {
+            return [
+                'is_bot' => true,
+                'bot_info' => $dd->getBot()
+            ];
+        }
+
+        // Return parsed client and device info
+        return [
+            'is_bot' => false,
+            'client' => $dd->getClient(), // Browser, app, etc.
+            'os' => $dd->getOs(),
+            'device' => [
+                'type' => $dd->getDeviceName(), // e.g., Smartphone
+                'brand' => $dd->getBrandName(), // e.g., Apple
+                'model' => $dd->getModel(),     // e.g., iPhone X
+                'is_smartphone' => $dd->isSmartphone(),
+                'is_tablet' => $dd->isTablet()
+            ]
+        ];
     }
 
     private static function getGeoData($ip) {
         try {
-            // Update path to where you store the MaxMind database
             $reader = new Reader(self::MAXMIND_DB_PATH);
             $record = $reader->city($ip);
-            
+
             return [
                 'country' => $record->country->name ?? 'Unknown',
                 'country_iso' => $record->country->isoCode ?? 'Unknown',
@@ -89,25 +100,25 @@ class RedirectController
             ?? $_SERVER['REMOTE_ADDR'] 
             ?? '0.0.0.0';
 
-        // If multiple IPs (X-Forwarded-For can contain multiple), get the first one
         $ip = trim(explode(',', $ip)[0]);
 
+        // Parse User Agent
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        $platform = (stripos($userAgent, 'android') !== false) ? 'android' : 'ios';
-
-        // Get device and browser info
         $deviceInfo = self::parseUserAgent($userAgent);
-        
-        // Get geo information
-        $geoData = self::getGeoData($ip);
-        
-        // Get referrer information
-        $referrerInfo = self::getReferrerInfo();
 
-        // Determine the redirect URL
-        $redirectUrl = $platform === 'android'
-            ? $entry['data']['android_scheme'] ?? $entry['url']
-            : $entry['data']['ios_scheme'] ?? $entry['url'];
+        // Get the platform family from DeviceDetector
+        $osFamily = strtolower($deviceInfo['os_family'] ?? 'unknown');
+
+        // Determine the redirect URL based on the platform
+        $redirectUrl = match ($osFamily) {
+            'android' => $entry['data']['android_scheme'] ?? $entry['url'],
+            'ios' => $entry['data']['ios_scheme'] ?? $entry['url'],
+            default => $entry['url'], // Fallback for other platforms
+        };
+
+        // Get geo and referrer info
+        $geoData = self::getGeoData($ip);
+        $referrerInfo = self::getReferrerInfo();
 
         // Track the visit in Google Analytics
         $analytics = new AnalyticsController();
@@ -115,20 +126,20 @@ class RedirectController
             'event_category' => 'Redirect',
             'event_action' => 'click',
             'redirect_key' => $key,
-            'platform' => $platform,
+            'platform' => strtolower($deviceInfo['os_family'] ?? 'unknown'), // Use osFamily directly
             'target_url' => $redirectUrl,
             'original_url' => $entry['url'],
-            
-            // Device and browser info
-            'device_category' => $deviceInfo['device_type'],
-            'device_brand' => $deviceInfo['device_brand'],
-            'device_model' => $deviceInfo['device_model'],
-            'browser' => $deviceInfo['browser'],
-            'browser_version' => $deviceInfo['browser_version'],
-            'operating_system' => $deviceInfo['os'],
-            'os_version' => $deviceInfo['os_version'],
-            
-            // Location info
+        
+            // Device info
+            'device_type' => $deviceInfo['device_name'] ?? 'Unknown',
+            'device_brand' => $deviceInfo['device_brand'] ?? 'Unknown',
+            'device_model' => $deviceInfo['device_model'] ?? 'Unknown',
+            'browser' => $deviceInfo['client_info']['name'] ?? 'Unknown',
+            'browser_version' => $deviceInfo['client_info']['version'] ?? 'Unknown',
+            'os' => $deviceInfo['os_info']['name'] ?? 'Unknown',
+            'os_version' => $deviceInfo['os_info']['version'] ?? 'Unknown',
+        
+            // Geo info
             'country' => $geoData['country'],
             'country_iso' => $geoData['country_iso'],
             'region' => $geoData['region'],
@@ -139,15 +150,11 @@ class RedirectController
             'longitude' => $geoData['longitude'],
             'timezone' => $geoData['timezone'],
             'continent' => $geoData['continent'],
-            
-            // Session and traffic source
-            'referrer_source' => $referrerInfo ? $referrerInfo['source'] : 'direct',
-            'referrer_url' => $referrerInfo ? $referrerInfo['full_url'] : '',
-            
+        
             // Additional parameters
             'language' => substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'unknown', 0, 2),
             'timestamp' => time()
-        ]);
+        ]);        
 
         return $redirectUrl;
     }

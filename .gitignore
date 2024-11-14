@@ -16,6 +16,7 @@ composer.lock
 *.swo            # Swap files for Vim
 *.bak            # Backup files
 *.tmp            # Temporary files
+!.vscode/launch.json # keep xdebug
 
 # OS generated files
 .DS_Store
