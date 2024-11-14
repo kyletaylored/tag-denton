@@ -39,8 +39,8 @@ COPY config/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY config/scripts/xdebug-config.sh /usr/local/bin/xdebug-config.sh
 RUN chmod +x /usr/local/bin/xdebug-config.sh
 
-# Add both enabled and disabled configurations
-COPY config/php-fpm/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini.disabled
+# Add .ini files
+COPY config/php/. /usr/local/etc/php/conf.d/.
 
 # Expose HTTP and HTTPS ports
 EXPOSE 80 443

@@ -60,6 +60,7 @@ Flight::route('GET /redirect/@key', function ($key) {
     if ($redirectUrl === '/404.html') {
         Flight::redirect('/404.html');
     } else {
+        Flight::response()->header('Cache-Control', 'max-age=15778476, public'); // 6 months
         Flight::redirect($redirectUrl);
     }
 });

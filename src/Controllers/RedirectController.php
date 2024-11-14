@@ -13,22 +13,17 @@ class RedirectController
     private static function parseUserAgent($userAgent) {
         $parser = new Parser($userAgent);
         
-        return [
+        $data = [
             'browser' => $parser->browser->name ?? 'Unknown',
             'browser_version' => $parser->browser->version->value ?? 'Unknown',
             'os' => $parser->os->name ?? 'Unknown',
             'os_version' => $parser->os->version->value ?? 'Unknown',
-            'device_type' => self::getDeviceType($parser),
+            'device_type' => $parser->getType(),
             'device_brand' => $parser->device->brand ?? 'Unknown',
             'device_model' => $parser->device->model ?? 'Unknown'
         ];
-    }
 
-    private static function getDeviceType($parser) {
-        if ($parser->isTablet()) return 'tablet';
-        if ($parser->isMobile()) return 'mobile';
-        if ($parser->isDesktop()) return 'desktop';
-        return 'unknown';
+        return $data;
     }
 
     private static function getGeoData($ip) {

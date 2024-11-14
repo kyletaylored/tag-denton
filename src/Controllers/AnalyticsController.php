@@ -10,10 +10,11 @@ class AnalyticsController
 
     public function __construct()
     {
-        $this->measurementId = getenv('GA_MEASUREMENT_ID');
-        $this->apiSecret = getenv('GA_API_SECRET');
         
-        if (!$this->measurementId || !$this->apiSecret) {
+        $this->measurementId = $_ENV['GA_MEASUREMENT_ID'];
+        $this->apiSecret = $_ENV['GA_API_SECRET'];
+
+        if (empty($this->measurementId) || empty($this->apiSecret)) {
             throw new \RuntimeException('GA4 credentials not configured');
         }
     }
