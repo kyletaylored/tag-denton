@@ -7,13 +7,27 @@ use Ghostff\Session\Session;
 
 Flight::register('session', Session::class);
 
+// Home Page
+Flight::route('GET /', function () {
+    $content = Flight::view()->fetch('home');
+    Flight::render('layouts/default', [
+        'title' => 'Welcome to Tag Denton',
+        'description' => 'Discover and explore Denton landmarks easily.',
+        'content' => $content,
+    ]);
+});
+
+// Login
 Flight::route('GET /login', function () {
-    error_log('Accessing /login route');
-    Flight::render('login');
+    $content = Flight::view()->fetch('login');
+    Flight::render('layouts/default', [
+        'title' => 'Login - Tag Denton',
+        'description' => 'Login to manage your Tag Denton links.',
+        'content' => $content,
+    ]);
 });
 
 Flight::route('POST /login', function () {
-    error_log('Accessing /login (POST) route');
     $username = Flight::request()->data->username;
     $password = Flight::request()->data->password;
 
@@ -22,29 +36,35 @@ Flight::route('POST /login', function () {
         $session->set('is_logged_in', true);
         $session->set('username', $username);
         $session->commit();
-        Flight::redirect('/');
+        Flight::redirect('/dashboard');
     } else {
         Flight::halt(401, 'Invalid credentials');
     }
 });
 
-Flight::route('GET /', function() {
-    error_log('Accessing / route');
-    $session = Flight::session();
-    if (!$session->exist('is_logged_in')) {
-        error_log('User is not authenticated, redirecting to /login');
-        Flight::redirect('/login');
-    } else {
-        Flight::render('home', ['username' => $session->get('username')]);
-    }
-});
-
+// Logout
 Flight::route('GET /logout', function () {
     $session = Flight::session();
     $session->destroy();
     Flight::redirect('/login');
 });
 
+// Dashboard
+Flight::route('GET /dashboard', function () {
+    $session = Flight::session();
+    if (!$session->exist('is_logged_in')) {
+        Flight::redirect('/login');
+    } else {
+        $content = Flight::view()->fetch('dashboard', ['username' => $session->get('username')]);
+        Flight::render('layouts/default', [
+            'title' => 'Dashboard - Tag Denton',
+            'description' => 'Manage your Tag Denton links.',
+            'content' => $content,
+        ]);
+    }
+});
+
+// Proxy
 Flight::route('POST /proxy', function () {
     $session = Flight::session();
     if (!$session->get('is_logged_in')) {
@@ -55,16 +75,23 @@ Flight::route('POST /proxy', function () {
     Flight::json($response);
 });
 
+// Redirect
 Flight::route('GET /redirect/@key', function ($key) {
     $redirectUrl = RedirectController::handleRedirect($key);
-    if ($redirectUrl === '/404.html') {
-        Flight::redirect('/404.html');
+
+    if ($redirectUrl === false) {
+        Flight::render('404', [
+            'title' => 'Page Not Found',
+            'description' => 'The page you are looking for does not exist.'
+        ]);
+        Flight::halt(404); // Send HTTP 404 status
     } else {
         Flight::response()->header('Cache-Control', 'max-age=15778476, public'); // 6 months
         Flight::redirect($redirectUrl);
     }
 });
 
+// Admin Links
 Flight::route('GET /admin/links', function () {
     $session = Flight::session();
     if (!$session->get('is_logged_in')) {
@@ -75,8 +102,13 @@ Flight::route('GET /admin/links', function () {
     Flight::json($links);
 });
 
-Flight::map('notFound', function() {
+// 404 Handler
+Flight::map('notFound', function () {
     error_log('404 Not Found: ' . Flight::request()->url);
-    Flight::render('404');
+    Flight::render('404', [
+        'title' => 'Page Not Found',
+        'description' => 'The page you are looking for does not exist.',
+        'content' => '<h1>404 - Page Not Found</h1>'
+    ]);
     Flight::halt(404);
 });

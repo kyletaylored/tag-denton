@@ -1,8 +1,11 @@
 #!/bin/bash
 
 # Run the Xdebug configuration script
-echo "Running Xdebug configuration script..."
 /usr/local/bin/xdebug-config.sh
 
-# Execute the main process (e.g., Supervisor)
-/usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
+# Start Apache in foreground mode
+echo "Starting Apache..."
+exec apache2-foreground
+
+# Setup SSL certificates (will use self-signed for local, Let's Encrypt for prod)
+/usr/local/bin/setup-ssl.sh

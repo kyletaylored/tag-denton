@@ -49,6 +49,7 @@
             "type": "php",
             "request": "launch",
             "port": 9003,
+            "log": true,
             "pathMappings": {
                 "/var/www/html/": "${workspaceFolder}",
                 "/var/www/html/public": "${workspaceFolder}/public"

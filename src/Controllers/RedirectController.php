@@ -91,7 +91,7 @@ class RedirectController
         $entry = $collection->findOne(['key' => $key]);
 
         if (!$entry) {
-            return '/404.html';
+            return false; // Return false for not found
         }
 
         // Get client IP, handling proxy cases
