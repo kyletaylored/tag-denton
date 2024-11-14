@@ -1,22 +1,11 @@
 services:
-  app:
+  php:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: tag-denton
     ports:
-      - "8080:80"    # Map HTTP to local 8080
-      - "8443:443"   # Map HTTPS to local 8443
-      - "9003:9003"  # For Xdebug
+      - 80:8080
+      - 443:8443
     volumes:
       - .:/var/www/html
-    environment:
-      - ENABLE_XDEBUG=${ENABLE_XDEBUG:-0}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    healthcheck:
-      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
