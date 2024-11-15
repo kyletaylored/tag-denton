@@ -48,4 +48,17 @@ class RedirectController
 
         return $redirectUrl;
     }
+
+    public static function getKeyData($key)
+    {
+        // Connect to MongoDB
+        $db = MongoHelper::getMongoConnection();
+        $collection = $db->links;
+
+        // Fetch the entry for the given key
+        $entry = $collection->findOne(['key' => $key]);
+
+        // Return the entry as an array or null if not found
+        return $entry ? iterator_to_array($entry) : null;
+    }
 }

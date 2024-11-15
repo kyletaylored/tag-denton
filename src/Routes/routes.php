@@ -96,6 +96,15 @@ Flight::group('/debug', function () {
     Flight::route('/server', function () {
         Kint::dump(['_SERVER' => $_SERVER, '_ENV' => $_ENV]);
     });
+
+    Flight::route('/key/@key', function ($key) {
+        $data = RedirectController::getKeyData($key);
+        if ($data) {
+            Kint::dump($data);
+        } else {
+            Flight::halt(404, 'Key not found');
+        }
+    });
 }, [new DebugAuthMiddleware()]);
 
 // 404 Handler
