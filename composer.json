@@ -16,7 +16,8 @@
         "monolog/monolog": "^3.8",
         "ghostff/session": "^3.0",
         "flightphp/core": "^3.13",
-        "matomo/device-detector": "^6.4"
+        "matomo/device-detector": "^6.4",
+        "kint-php/kint": "^5.1"
     },
     "autoload": {
         "psr-4": {

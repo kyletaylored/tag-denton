@@ -3,11 +3,14 @@
 use App\Controllers\ProxyController;
 use App\Controllers\RedirectController;
 use App\Controllers\LinksController;
+use App\Middleware\DebugAuthMiddleware;
+use App\Middleware\AuthMiddleware;
 use Ghostff\Session\Session;
+use Kint\Kint;
 
 Flight::register('session', Session::class);
 
-// Home Page
+// Public routes
 Flight::route('GET /', function () {
     $content = Flight::view()->fetch('home');
     Flight::render('layouts/default', [
@@ -17,7 +20,6 @@ Flight::route('GET /', function () {
     ]);
 });
 
-// Login
 Flight::route('GET /login', function () {
     $content = Flight::view()->fetch('login');
     Flight::render('layouts/default', [
@@ -42,73 +44,63 @@ Flight::route('POST /login', function () {
     }
 });
 
-// Logout
 Flight::route('GET /logout', function () {
     $session = Flight::session();
     $session->destroy();
     Flight::redirect('/login');
 });
 
-// Dashboard
-Flight::route('GET /dashboard', function () {
-    $session = Flight::session();
-    if (!$session->exist('is_logged_in')) {
-        Flight::redirect('/login');
-    } else {
+// Group routes requiring authentication
+Flight::group('', function () {
+    // Dashboard
+    Flight::route('GET /dashboard', function () {
+        $session = Flight::session();
         $content = Flight::view()->fetch('dashboard', ['username' => $session->get('username')]);
         Flight::render('layouts/default', [
             'title' => 'Dashboard - Tag Denton',
             'description' => 'Manage your Tag Denton links.',
             'content' => $content,
         ]);
-    }
-});
+    });
 
-// Proxy
-Flight::route('POST /proxy', function () {
-    $session = Flight::session();
-    if (!$session->get('is_logged_in')) {
-        Flight::halt(403, 'Unauthorized');
-    }
+    // Proxy
+    Flight::route('POST /proxy', function () {
+        $response = ProxyController::handleProxyRequest(Flight::request()->data->getData());
+        Flight::json($response);
+    });
 
-    $response = ProxyController::handleProxyRequest(Flight::request()->data->getData());
-    Flight::json($response);
-});
+    // Admin Links
+    Flight::route('GET /admin/links', function () {
+        $links = LinksController::getAllLinks();
+        Flight::json($links);
+    });
+}, [new AuthMiddleware()]);
 
-// Redirect
+// Public route for redirects
 Flight::route('GET /redirect/@key', function ($key) {
     $redirectUrl = RedirectController::handleRedirect($key);
-
     if ($redirectUrl === false) {
-        Flight::render('404', [
-            'title' => 'Page Not Found',
-            'description' => 'The page you are looking for does not exist.'
-        ]);
-        Flight::halt(404); // Send HTTP 404 status
+        Flight::render('404');
+        Flight::halt(404);
     } else {
-        Flight::response()->header('Cache-Control', 'max-age=15778476, public'); // 6 months
         Flight::redirect($redirectUrl);
     }
 });
 
-// Admin Links
-Flight::route('GET /admin/links', function () {
-    $session = Flight::session();
-    if (!$session->get('is_logged_in')) {
-        Flight::halt(403, 'Unauthorized');
-    }
+// Debug routes (protected with Basic Auth)
+Flight::group('/debug', function () {
+    Flight::route('/request', function () {
+        Kint::dump(App\Helpers\RequestHelper::getRequestDetails());
+    });
 
-    $links = LinksController::getAllLinks();
-    Flight::json($links);
-});
+    Flight::route('/server', function () {
+        Kint::dump(['_SERVER' => $_SERVER, '_ENV' => $_ENV]);
+    });
+}, [new DebugAuthMiddleware()]);
 
 // 404 Handler
 Flight::map('notFound', function () {
     error_log('404 Not Found: ' . Flight::request()->url);
-    Flight::render('404', [
-        'title' => 'Page Not Found',
-        'description' => 'The page you are looking for does not exist.',
-        'content' => '<h1>404 - Page Not Found</h1>'
-    ]);
+    Flight::render('404');
     Flight::halt(404);
 });
