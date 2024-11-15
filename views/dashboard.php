@@ -15,15 +15,15 @@
     <!-- Generate Links Tab -->
     <div class="tab-pane fade show active" id="generate" role="tabpanel" aria-labelledby="generate-tab">
         <div class="content">
-            <p>Paste one or more Instagram URLs (one per line) to generate Tag Denton links.</p>
-            <textarea id="urls" class="form-control mb-3" rows="5" placeholder="Paste Instagram URLs here, one per line"></textarea>
+            <p>Paste one or more URLs (one per line) to generate Tag Denton links.</p>
+            <textarea id="urls" class="form-control mb-3" rows="5" placeholder="Paste URLs here, one per line"></textarea>
             <button id="generateLinks" class="btn btn-success mb-3">Generate Links</button>
             <div id="loading" class="text-center" style="display: none;">Processing... Please wait.</div>
             <div id="multiResult" class="table-responsive">
                 <table id="linksTable" class="table table-bordered table-hover" style="display: none;">
                     <thead>
                         <tr>
-                            <th>Instagram URL</th>
+                            <th>Original URL</th>
                             <th>Tag Denton Link</th>
                         </tr>
                     </thead>
@@ -67,7 +67,7 @@ $(document).ready(function () {
         const urls = document.getElementById("urls").value.trim().split("\n").filter(Boolean);
 
         if (urls.length === 0) {
-            alert("Please enter at least one Instagram URL.");
+            alert("Please enter at least one URL.");
             return;
         }
 
