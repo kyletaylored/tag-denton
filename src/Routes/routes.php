@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\DebugController;
 use App\Controllers\ProxyController;
 use App\Controllers\RedirectController;
 use App\Controllers\LinksController;
@@ -90,19 +91,29 @@ Flight::route('GET /redirect/@key', function ($key) {
 // Debug routes (protected with Basic Auth)
 Flight::group('/debug', function () {
     Flight::route('/request', function () {
-        Kint::dump(App\Helpers\RequestHelper::getRequestDetails());
+        $data = \App\Helpers\RequestHelper::getRequestDetails();
+        if (Flight::request()->query->format === 'json') {
+            Flight::json($data);
+        } else {
+            Kint::dump($data);
+        }
     });
 
     Flight::route('/server', function () {
-        Kint::dump(['_SERVER' => $_SERVER, '_ENV' => $_ENV]);
+        $data = DebugController::handleServerEnvDebug();
+        if (Flight::request()->query->format === 'json') {
+            Flight::json($data);
+        } else {
+            Kint::dump($data);
+        }
     });
 
-    Flight::route('/key/@key', function ($key) {
-        $data = RedirectController::getKeyData($key);
-        if ($data) {
-            Kint::dump($data);
+    Flight::route('/analytics', function () {
+        $data = DebugController::handleAnalyticsDebug();
+        if (Flight::request()->query->format === 'json') {
+            Flight::json($data);
         } else {
-            Flight::halt(404, 'Key not found');
+            Kint::dump($data);
         }
     });
 }, [new DebugAuthMiddleware()]);
