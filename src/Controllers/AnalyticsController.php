@@ -6,120 +6,97 @@ use App\Helpers\EnvConfig;
 
 class AnalyticsController
 {
-    private string $measurementId;
-    private string $apiSecret;
-    private string $endpoint = 'https://www.google-analytics.com/mp/collect';
+    private array $providers = [];
+    private array $propertyMap = [
+        'google' => [
+            'redirect_key' => 'redirect_key',
+            'platform' => 'platform',
+            'device_type' => 'device_type',
+            'browser' => 'browser',
+            'os' => 'os',
+            'target_url' => 'target_url',
+            'original_url' => 'original_url',
+            'country' => 'country',
+            'region' => 'region',
+            'city' => 'city'
+        ],
+        'mixpanel' => [
+            'redirect_key' => 'Redirect Key',
+            'platform' => 'Platform',
+            'device_type' => 'Device Type',
+            'browser' => 'Browser',
+            'os' => 'OS',
+            'target_url' => 'Target URL',
+            'original_url' => 'Original URL',
+            'country' => 'Country',
+            'region' => 'Region',
+            'city' => 'City'
+        ]
+    ];
 
     public function __construct()
     {
-        
-        $this->measurementId = EnvConfig::get('GA_MEASUREMENT_ID');
-        $this->apiSecret = EnvConfig::get('GA_API_SECRET');
-
-        if (empty($this->measurementId) || empty($this->apiSecret)) {
-            throw new \RuntimeException('GA4 credentials not configured');
+        // Initialize configured providers
+        if (EnvConfig::get('ANALYTICS_PROVIDER') === 'google') {
+            $this->providers[] = new GoogleAnalyticsProvider();
+        } elseif (EnvConfig::get('ANALYTICS_PROVIDER') === 'mixpanel') {
+            $this->providers[] = new MixpanelProvider();
+        } elseif (EnvConfig::get('ANALYTICS_PROVIDER') === 'all') {
+            $this->providers[] = new GoogleAnalyticsProvider();
+            $this->providers[] = new MixpanelProvider();
         }
     }
 
-    /**
-     * Generate a unique client ID based on IP, user-agent, and timestamp.
-     */
-    private function generateClientId(): string
+    public function trackRedirectEvent(string $key, array $deviceData, array $geoData, string $redirectUrl, string $originalUrl): void
     {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown_ip';
-        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown_agent';
-        $timestamp = microtime(true);
-
-        return hash('sha256', $ip . $userAgent . $timestamp);
-    }
-
-    /**
-     * Track a custom event using the GA4 Measurement Protocol
-     */
-    public function trackCustomEvent(
-        string $eventName,
-        array $params = [],
-        ?string $clientId = null
-    ): bool {
-        $clientId = $clientId ?? $this->generateClientId();
-        
-        $payload = [
-            'client_id' => $clientId,
-            'events' => [
-                [
-                    'name' => $eventName,
-                    'params' => $params
-                ]
-            ]
+        // Normalize the data
+        $normalizedData = [
+            'redirect_key' => $key,
+            'platform' => $deviceData['os']['family'] ?? 'unknown',
+            'device_type' => $deviceData['device']['type'] ?? 'unknown',
+            'browser' => $deviceData['client']['name'] ?? 'unknown',
+            'os' => $deviceData['os']['name'] ?? 'unknown',
+            'target_url' => $redirectUrl,
+            'original_url' => $originalUrl,
+            'country' => $geoData['country'] ?? 'unknown',
+            'region' => $geoData['region'] ?? 'unknown',
+            'city' => $geoData['city'] ?? 'unknown'
         ];
 
-        $url = sprintf(
-            '%s?measurement_id=%s&api_secret=%s',
-            $this->endpoint,
-            $this->measurementId,
-            $this->apiSecret
-        );
-
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($payload),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'User-Agent: PHP GA4 Client/1.0'
-            ]
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode !== 204) {
-            error_log(sprintf(
-                'GA4 tracking failed: HTTP %d, Response: %s',
-                $httpCode,
-                $response
-            ));
-            return false;
+        foreach ($this->providers as $provider) {
+            if ($provider->isEnabled()) {
+                // Map the normalized data to provider-specific format
+                $providerData = $this->mapPropertiesToProvider(
+                    $normalizedData,
+                    $provider instanceof GoogleAnalyticsProvider ? 'google' : 'mixpanel'
+                );
+                
+                $provider->sendEvent('app_redirect', $providerData);
+            }
         }
-
-        return true;
     }
 
-    /**
-     * Track a page view event
-     */
-    public function trackPageView(string $pageTitle, string $pagePath): bool
+    private function mapPropertiesToProvider(array $normalizedData, string $provider): array
     {
-        return $this->trackCustomEvent('page_view', [
-            'page_title' => $pageTitle,
-            'page_location' => $pagePath
-        ]);
+        $mappedData = [];
+        foreach ($normalizedData as $key => $value) {
+            if (isset($this->propertyMap[$provider][$key])) {
+                $mappedData[$this->propertyMap[$provider][$key]] = $value;
+            }
+        }
+        return $mappedData;
     }
 
-    /**
-     * Track an item selection event
-     */
-    public function trackItemSelection(string $itemId, string $itemName): bool
+    public function getDebugInfo(): array
     {
-        return $this->trackCustomEvent('select_item', [
-            'items' => [[
-                'item_id' => $itemId,
-                'item_name' => $itemName
-            ]]
-        ]);
-    }
-
-    /**
-     * Track a conversion event
-     */
-    public function trackConversion(string $conversionId, float $value = 0.0): bool
-    {
-        return $this->trackCustomEvent('conversion', [
-            'conversion_id' => $conversionId,
-            'value' => $value,
-            'currency' => 'USD'  // Change as needed
-        ]);
+        $debug = [];
+        foreach ($this->providers as $provider) {
+            $type = get_class($provider);
+            $debug[$type] = [
+                'enabled' => $provider->isEnabled(),
+                'type' => $type
+            ];
+        }
+        return $debug;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Helpers\RequestHelper;
 use App\Helpers\MongoHelper;
+use App\Controllers\AnalyticsController;
 
 class RedirectController
 {
@@ -31,20 +32,15 @@ class RedirectController
             default => $entry['url'],
         };
 
-        // Track the visit in Google Analytics
+        // Single analytics call
         $analytics = new AnalyticsController();
-        $analytics->trackCustomEvent('app_redirect', array_merge(
-            [
-                'event_category' => 'Redirect',
-                'event_action' => 'click',
-                'redirect_key' => $key,
-                'platform' => $osFamily,
-                'target_url' => $redirectUrl,
-                'original_url' => $entry['url'],
-            ],
-            $deviceData,
-            $geoData
-        ));
+        $analytics->trackRedirectEvent(
+            $key,
+            $requestInfo['device_data'],
+            $requestInfo['geo_data'],
+            $redirectUrl,
+            $entry['url']
+        );
 
         return $redirectUrl;
     }

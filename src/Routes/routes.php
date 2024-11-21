@@ -121,6 +121,11 @@ Flight::group('/debug', function () {
 // 404 Handler
 Flight::map('notFound', function () {
     error_log('404 Not Found: ' . Flight::request()->url);
-    Flight::render('404');
+    $content = Flight::view()->fetch('404');
+    Flight::render('layouts/default', [
+        'title' => '404 - Page Not Found',
+        'description' => 'Discover and explore Denton landmarks easily.',
+        'content' => $content,
+    ]);
     Flight::halt(404);
 });

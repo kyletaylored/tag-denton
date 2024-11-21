@@ -2,28 +2,33 @@
 
 namespace App\Controllers;
 
-use App\Controllers\AnalyticsController;
+use App\Helpers\RequestHelper;
+use App\Helpers\EnvConfig;
 
 class DebugController
 {
     public static function handleDebug()
     {
-        return \App\Helpers\RequestHelper::getRequestDetails();
+        return RequestHelper::getRequestDetails();
     }
 
     public static function handleServerEnvDebug()
     {
-        // Return _SERVER and _ENV data
         return [
             '_SERVER' => $_SERVER,
             '_ENV' => $_ENV,
         ];
     }
 
-    public static function handleAnalyticsDebug()
+    public static function handleAnalyticsDebug($key = 'debug_key')
     {
+        // Get request details
+        $requestInfo = RequestHelper::getRequestDetails();
+        $deviceData = $requestInfo['device_data'];
+        $geoData = $requestInfo['geo_data'];
+
+        // Initialize analytics controllers
         $analytics = new AnalyticsController();
-        $payload = $analytics->createEventPayload('debug_event', ['debug' => 'test']);
-        return $payload;
+        return $analytics->getDebugInfo();
     }
 }
